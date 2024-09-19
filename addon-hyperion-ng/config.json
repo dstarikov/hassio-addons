@@ -13,6 +13,7 @@
   "apparmor": false,
   "boot": "auto",
   "ports": {
+    "2100/udp": 2100,
     "8090/tcp": 8090,
     "8092/tcp": null,
     "19333/tcp": 19333,
@@ -21,6 +22,7 @@
     "19445/tcp": 19445
   },
   "ports_description": {
+    "2100/udp": "Hue Entertainment",
     "8090/tcp": "Web Admin",
     "8092/tcp": "SSL Web Admin",
     "19333/tcp": "Boblight Server",
@@ -31,7 +33,7 @@
   "map": [
     "config:rw"
   ],
-  "image": "bradsjm/hyperion-ng-addon-{arch}",
+  "image": "dstarikov/hyperion-ng-addon-{arch}",
   "options": {},
   "schema": {},
   "privileged": [
