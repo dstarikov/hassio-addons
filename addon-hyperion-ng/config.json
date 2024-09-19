@@ -33,7 +33,6 @@
   "map": [
     "config:rw"
   ],
-  "image": "dstarikov/hyperion-ng-addon-{arch}",
   "options": {},
   "schema": {},
   "privileged": [
