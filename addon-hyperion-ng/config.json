@@ -52,5 +52,6 @@
   ],
   "webui": "http://[HOST]:[PORT:8090]",
   "init": false,
-  "ingress": true
+  "ingress": true,
+  "host_network": true
 }
