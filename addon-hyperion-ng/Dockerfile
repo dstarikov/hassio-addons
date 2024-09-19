@@ -1,37 +1,49 @@
-ARG BUILD_FROM
+FROM debian:bullseye
 
-FROM ${BUILD_FROM}
-ARG DOWNLOAD_URL
-ARG BUILD_VERSION
-ARG BUILD_ARCH
+# Install hyperion from nightly repo
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y wget gpg apt-transport-https lsb-release && \
+    wget -qO- https://releases.hyperion-project.org/hyperion.pub.key | gpg --dearmor -o /usr/share/keyrings/hyperion.pub.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/hyperion.pub.gpg] https://nightly.apt.releases.hyperion-project.org/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hyperion.nightly.list && \
+    apt-get update && \
+    apt-get install -y hyperion && \
+    apt-get -y --purge autoremove gpg && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV LANG C.UTF-8
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		libqt5widgets5 \
-		libqt5serialport5 \
-		libqt5sql5-sqlite \
-		libqt5x11extras5 \
-		libavahi-core7 \
-		libavahi-compat-libdnssd1 \
-		libusb-1.0-0 \
-		libjpeg-dev \
-		libssl1.1 \
-		zlib1g \
-		libcec6 \
-		wget \
-		v4l-utils \
-	&& rm -rf /var/lib/apt/lists/*
-COPY run.sh /
-RUN chmod a+x /run.sh
+# Flatbuffers Server port
+EXPOSE 19400
 
-RUN case "${BUILD_ARCH}" in \
-    amd64) ARCH="amd64" ;; \
-    armhf) ARCH="armv7" ;; \
-    aarch64) ARCH="arm64" ;; \
-    *) echo "Unsupported architecture: ${BUILD_ARCH}" >&2; exit 1 ;; \
-    esac && \
-    wget -q "${DOWNLOAD_URL}/${BUILD_VERSION}/Hyperion-${BUILD_VERSION}-Linux-${ARCH}.tar.gz" -O - | tar -xvz -C /usr
+# JSON-RPC Server Port
+EXPOSE 19444
+
+# Protocol Buffers Server port
+EXPOSE 19445
+
+# Boblight Server port
+EXPOSE 19333
+
+# Philips Hue Entertainment mode (UDP)
+EXPOSE 2100
+
+# HTTP and HTTPS Web UI default ports
+EXPOSE 8090
+EXPOSE 8092
+
+ENV UID=1000
+ENV GID=1000
+
+RUN groupadd -f hyperion
+RUN useradd -r -s /bin/bash -g hyperion hyperion
+
+RUN echo "#!/bin/bash" > /start.sh
+RUN echo "groupmod -g \$2 hyperion" >> /start.sh
+RUN echo "usermod -u \$1 hyperion" >> /start.sh
+RUN echo "chown -R hyperion:hyperion /config" >> /start.sh
+RUN echo "sudo -u hyperion /usr/bin/hyperiond -v --service -u /config" >> /start.sh
+
+RUN chmod 777 /start.sh
 
 VOLUME /config
-EXPOSE 8090 8092 19333 19400 19444 19445
-CMD [ "/run.sh" ]
+CMD [ "bash", "-c", "/start.sh ${UID} ${GID}" ]
