@@ -3,7 +3,8 @@ FROM debian:bullseye
 # Install hyperion from nightly repo
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
-    apt-get install -y wget gpg apt-transport-https lsb-release && \
+    apt-get install -y wget gpg apt-transport-https lsb-release sudo libpython3.9 && \
+    apt-get install -y libftdi1-2 --no-install-recommends && \
     wget -qO- https://releases.hyperion-project.org/hyperion.pub.key | gpg --dearmor -o /usr/share/keyrings/hyperion.pub.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/hyperion.pub.gpg] https://nightly.apt.releases.hyperion-project.org/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hyperion.nightly.list && \
     apt-get update && \
