@@ -51,5 +51,6 @@
     "/dev/mem"
   ],
   "webui": "http://[HOST]:[PORT:8090]",
-  "init": false
+  "init": false,
+  "ingress": true
 }
